@@ -11,19 +11,10 @@ public partial class _Default : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-        bool testMode = true;
-
+        // replace with your api key
         string apiKey = "123ABC";
 
         var bitPay = new BitPay(apiKey);
-
-        if (testMode)
-        {
-            bitPay.BaseURL = string.Format("{0}://{1}:{2}", Request.Url.Scheme, Request.Url.Host, Request.Url.Port);
-            bitPay.CreateInvoiceURL = "/test/invoice.ashx";
-            bitPay.GetInvoiceURL = "/test/invoice.ashx?id=";
-        }
-
         var request = new InvoiceRequest();
         var log = new Log();
 
@@ -55,6 +46,16 @@ public partial class _Default : System.Web.UI.Page
         request.BuyerCountry = "Example Country";
         request.BuyerEmail = "buyer@example.com";
         request.BuyerPhone = "(+00) 00000 000000";
+
+        // start test mode (this sends requests to the URL's specified below, comment out this whole block to connect to the live bitpay server)
+        bool testMode = true;
+        if (testMode)
+        {
+            bitPay.BaseURL = Request.Url.ToString().ToLower().Replace("/default.aspx", "");
+            bitPay.CreateInvoiceURL = "/test/invoice.ashx";
+            bitPay.GetInvoiceURL = "/test/invoice.ashx?id=";
+        }
+        // end test code
         
         try
         {
@@ -62,9 +63,10 @@ public partial class _Default : System.Web.UI.Page
 
             if (response.Success)
             {
-                // DEBUG THE RESPONSE:
+                // debug the response
                 List<string> data = new List<string>();
 
+                data.Add("<h2>Success</h2>");
                 data.Add("id: " + response.Invoice.Id);
                 data.Add("url: " + response.Invoice.Url);
                 data.Add("posData: " + response.Invoice.PosData.Select(x => x.Key + " = " + x.Value).Aggregate((a, b) => a + ", " + b));
@@ -80,24 +82,25 @@ public partial class _Default : System.Web.UI.Page
             }
             else
             {
-                // DEBUG THE RESPONSE
-                List<string> data = new List<string>() { "error type: " + response.ErrorType, "error message: " + response.ErrorMessage };
+                // debug the response
+                List<string> data = new List<string>() { "<h2>Error</h2>", "error type: " + response.ErrorType, "error message: " + response.ErrorMessage };
 
                 Dump(data);
             }
         }
         catch (Exception ex)
         {
-            // DEBUG THE LOG DATA AND EXCEPTION MESSAGE
-            List<string> logData = new List<string>()
+            // debug the log data and the exception message
+            List<string> data = new List<string>()
             {
+                "<h2>Exeption</h2>",
                 "request URL: " + log.RequestUrl,
                 "request Data: " + log.RequestData,
                 "response Data: " + log.ResponseData,
                 "exception: " + ex.Message
             };
 
-            logData.ForEach(x => Response.Write(x));
+            Dump(data);
         }
     }
 

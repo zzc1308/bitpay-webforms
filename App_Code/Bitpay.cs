@@ -11,6 +11,9 @@ using System.Web;
 
 namespace BitPayAPI
 {
+    /// <summary>
+    /// Based on BitPay API v0.3.1 - https://bitpay.com/downloads/bitpayApi.pdf
+    /// </summary>
     public class BitPay
     {
         public string ApiKey { get; set; }
@@ -24,11 +27,6 @@ namespace BitPayAPI
             BaseURL = "https://bitpay.com/api";
             CreateInvoiceURL = "/invoice";
             GetInvoiceURL = "/invoice/";
-
-            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
-            {
-                NullValueHandling = NullValueHandling.Ignore
-            };
         }
 
         public InvoiceResponse CreateInvoice(InvoiceRequest request, Log log)
@@ -40,8 +38,8 @@ namespace BitPayAPI
                 throw new Exception("Currency must be specified.");
 
             log.RequestUrl = BaseURL + CreateInvoiceURL;
-            log.RequestData = JsonConvert.SerializeObject(request);
-            log.ResponseData = HttpPost(log.RequestUrl, log.RequestData);
+            log.RequestData = JsonConvert.SerializeObject(request, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+            log.ResponseData = PostJSON(log.RequestUrl, log.RequestData);
 
             JObject obj = JObject.Parse(log.ResponseData);
 
@@ -56,7 +54,7 @@ namespace BitPayAPI
         public InvoiceResponse GetInvoice(string invoiceId, Log log)
         {
             log.RequestUrl = BaseURL + GetInvoiceURL + invoiceId;
-            log.ResponseData = HttpGet(log.RequestUrl);
+            log.ResponseData = GetJSON(log.RequestUrl);
 
             JObject obj = JObject.Parse(log.ResponseData);
 
@@ -73,7 +71,7 @@ namespace BitPayAPI
             return JsonConvert.DeserializeObject<Invoice>(json);
         }
 
-        private string HttpPost(string url, string data)
+        private string PostJSON(string url, string data)
         {
             using (WebClient wc = GetWebClient())
             {
@@ -83,7 +81,7 @@ namespace BitPayAPI
             }
         }
 
-        private string HttpGet(string url)
+        private string GetJSON(string url)
         {
             using (WebClient wc = GetWebClient())
             {
@@ -91,11 +89,13 @@ namespace BitPayAPI
             }
         }
 
-        private WebClient GetWebClient(string contentType = null)
+        private WebClient GetWebClient()
         {
             WebClient wc = new WebClient();
 
+            // setting WebClient.Credentials doesn't send the auth headers first time so force this manually
             wc.Headers[HttpRequestHeader.Authorization] = "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes(ApiKey + ":"));
+            wc.Headers[HttpRequestHeader.UserAgent] = "BitPay WebForms (https://github.com/timabbott83/bitpay-webforms)";
 
             return wc;
         }

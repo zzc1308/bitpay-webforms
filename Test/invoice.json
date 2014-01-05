@@ -2,11 +2,11 @@
     "id": "1234",
     "url": "http://bitpay.com/invoice/1234",
     "posData": {
-        "key": "value"
+        "OrderId": "123456789"
     },
     "status": "complete",
     "price": 99.99,
-    "currency": "USD",
+    "currency": "GBP",
     "btcPrice": 0.1234,
     "invoiceTime": 1388855223,
     "expirationTime": 1388855223,
