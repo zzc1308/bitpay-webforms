@@ -13,6 +13,7 @@ namespace BitPayAPI
 {
     /// <summary>
     /// Based on BitPay API v0.3.1 - https://bitpay.com/downloads/bitpayApi.pdf
+    /// Bitcoin: 1qQSVhPa3ivWCefGp6ZjjSjHUpGUnhiL1
     /// </summary>
     public class BitPay
     {

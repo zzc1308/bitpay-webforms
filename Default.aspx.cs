@@ -9,6 +9,10 @@ using System.Web.UI.WebControls;
 
 public partial class _Default : System.Web.UI.Page
 {
+    /// <summary>
+    /// Based on BitPay API v0.3.1 - https://bitpay.com/downloads/bitpayApi.pdf
+    /// Bitcoin: 1qQSVhPa3ivWCefGp6ZjjSjHUpGUnhiL1
+    /// </summary>
     protected void Page_Load(object sender, EventArgs e)
     {
         // replace with your api key
