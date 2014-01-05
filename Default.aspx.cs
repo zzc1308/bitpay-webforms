@@ -49,6 +49,7 @@ public partial class _Default : System.Web.UI.Page
 
         // start test mode (this sends requests to the URL's specified below, comment out this whole block to connect to the live bitpay server)
         bool testMode = true;
+
         if (testMode)
         {
             bitPay.BaseURL = Request.Url.ToString().ToLower().Replace("/default.aspx", "");
@@ -69,7 +70,10 @@ public partial class _Default : System.Web.UI.Page
                 data.Add("<h2>Success</h2>");
                 data.Add("id: " + response.Invoice.Id);
                 data.Add("url: " + response.Invoice.Url);
-                data.Add("posData: " + response.Invoice.PosData.Select(x => x.Key + " = " + x.Value).Aggregate((a, b) => a + ", " + b));
+
+                if (response.Invoice.PosData.Count > 0)
+                    data.Add("posData: " + response.Invoice.PosData.Select(x => x.Key + " = " + x.Value).Aggregate((a, b) => a + ", " + b));
+
                 data.Add("status: " + response.Invoice.Status.ToString());
                 data.Add("price: " + response.Invoice.Price.ToString());
                 data.Add("currency: " + response.Invoice.Currency);
