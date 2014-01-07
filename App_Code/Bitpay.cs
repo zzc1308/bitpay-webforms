@@ -21,6 +21,7 @@ namespace BitPayAPI
         public string BaseURL { get; set; }
         public string CreateInvoiceURL { get; set; }
         public string GetInvoiceURL { get; set; }
+        public string GetRatesURL { get; set; }
 
         public BitPay(string apiKey)
         {
@@ -28,6 +29,7 @@ namespace BitPayAPI
             BaseURL = "https://bitpay.com/api";
             CreateInvoiceURL = "/invoice";
             GetInvoiceURL = "/invoice/";
+            GetRatesURL = "/rates";
         }
 
         public InvoiceResponse CreateInvoice(InvoiceRequest request, Log log)
@@ -40,7 +42,7 @@ namespace BitPayAPI
 
             log.RequestUrl = BaseURL + CreateInvoiceURL;
             log.RequestData = JsonConvert.SerializeObject(request, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
-            log.ResponseData = PostJSON(log.RequestUrl, log.RequestData);
+            log.ResponseData = PostJSON(log.RequestUrl, log.RequestData, true);
 
             JObject obj = JObject.Parse(log.ResponseData);
 
@@ -55,7 +57,7 @@ namespace BitPayAPI
         public InvoiceResponse GetInvoice(string invoiceId, Log log)
         {
             log.RequestUrl = BaseURL + GetInvoiceURL + invoiceId;
-            log.ResponseData = GetJSON(log.RequestUrl);
+            log.ResponseData = GetJSON(log.RequestUrl, true);
 
             JObject obj = JObject.Parse(log.ResponseData);
 
@@ -72,9 +74,17 @@ namespace BitPayAPI
             return JsonConvert.DeserializeObject<Invoice>(json);
         }
 
-        private string PostJSON(string url, string data)
+        public List<ConversionRate> GetRates(Log log)
         {
-            using (WebClient wc = GetWebClient())
+            log.RequestUrl = BaseURL + GetRatesURL;
+            log.ResponseData = GetJSON(log.RequestUrl, false);
+
+            return JsonConvert.DeserializeObject<List<ConversionRate>>(log.ResponseData);
+        }
+
+        private string PostJSON(string url, string data, bool sendAPIKey)
+        {
+            using (WebClient wc = GetWebClient(sendAPIKey))
             {
                 wc.Headers.Add("Content-Type", "application/json");
 
@@ -82,20 +92,24 @@ namespace BitPayAPI
             }
         }
 
-        private string GetJSON(string url)
+        private string GetJSON(string url, bool sendAPIKey)
         {
-            using (WebClient wc = GetWebClient())
+            using (WebClient wc = GetWebClient(sendAPIKey))
             {
                 return wc.DownloadString(url);
             }
         }
 
-        private WebClient GetWebClient()
+        private WebClient GetWebClient(bool sendAPIKey)
         {
             WebClient wc = new WebClient();
 
-            // setting WebClient.Credentials doesn't send the auth headers first time so force this manually
-            wc.Headers[HttpRequestHeader.Authorization] = "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes(ApiKey + ":"));
+            if (sendAPIKey)
+            {
+                // setting WebClient.Credentials doesn't send the auth headers first time so force this manually
+                wc.Headers[HttpRequestHeader.Authorization] = "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes(ApiKey + ":"));
+            }
+
             wc.Headers[HttpRequestHeader.UserAgent] = "BitPay WebForms (https://github.com/timabbott83/bitpay-webforms)";
 
             return wc;
@@ -242,6 +256,22 @@ namespace BitPayAPI
         public string ResponseData { get; internal set; }
 
         public Log()
+        {
+        }
+    }
+
+    public class ConversionRate
+    {
+        [JsonProperty("code")]
+        public string Code { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("rate")]
+        public decimal Rate { get; set; }
+
+        public ConversionRate()
         {
         }
     }
