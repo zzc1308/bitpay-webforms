@@ -73,7 +73,7 @@ public partial class _Default : System.Web.UI.Page
 
                 data.Add("<h2>Success</h2>");
                 data.Add("id: " + response.Invoice.Id);
-                data.Add("url: " + response.Invoice.Url);
+                data.Add("url: " + response.Invoice.URL);
 
                 if (response.Invoice.PosData.Count > 0)
                     data.Add("posData: " + response.Invoice.PosData.Select(x => x.Key + " = " + x.Value).Aggregate((a, b) => a + ", " + b));
@@ -102,7 +102,7 @@ public partial class _Default : System.Web.UI.Page
             List<string> data = new List<string>()
             {
                 "<h2>Exeption</h2>",
-                "request URL: " + log.RequestUrl,
+                "request URL: " + log.RequestURL,
                 "request Data: " + log.RequestData,
                 "response Data: " + log.ResponseData,
                 "exception: " + ex.Message
